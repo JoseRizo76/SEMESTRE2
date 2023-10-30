@@ -1,0 +1,132 @@
+
+<!DOCTYPE html>
+<html lang='es'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <script src='https://kit.fontawesome.com/892f23a568.js' crossorigin='anonymous'></script>
+    <title>UNAN MANAGUA</title>
+    <style>
+         body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background: url('https://drive.google.com/uc?export=download&id=1-OnPX-RrzTE9FEF-PIWnAeAr-MvfKGVk') no-repeat center center fixed;
+            background-size: cover;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .logo-unan {
+            width: 220px;
+            margin: 5px 5px 5px 5px;
+            border-radius: 10px 0px 0px 0px;
+        }
+        .titulo {
+            color: rgb(255, 0, 0);
+            letter-spacing: 2px;
+            font-size: 20px;
+            text-align: center;
+            text-transform: uppercase;
+            position: flex;
+            margin-top: 1px;
+            font-weight: bold;
+        }
+        .login-container {
+            background-color: #222222;
+            padding: 10px;
+            border-radius: 20px;
+            box-shadow: 5px 5px 10px 10px rgba(255, 1, 1, 0.285);
+            width: 350px;
+            height: 400px;
+            text-align: center;
+            border-width: 1px;
+            border-color: rgba(255, 1, 1, 0.99);
+            border-style: solid;
+            animation: borderAnimation 0.1s infinite alternate-reverse;
+        }
+        @keyframes borderAnimation {
+            0% { border-width: 1px; }
+            100% { border-width: 6px; }
+        }
+        @keyframes bordertext {
+            0% { text-shadow: 1px 1px 1px red; }
+            100% { text-shadow: 3px 1px 3px red;}
+        }
+        .fa-house {
+            font-size: 45px;
+            color: #000000;
+            margin-top: 20px;
+            padding: 10px;
+            text-shadow: 3px 1px 3px red;
+            animation: bordertext 0.8s infinite alternate-reverse;
+        }
+        @media (max-width: 480px) {
+            .login-container {
+                width: 80%;
+            }
+        }
+        .error{
+            color: rgb(255, 0, 0);
+            font-size: 25px;
+            margin: 0px 0px 15px 0px;
+            letter-spacing: 2px;
+            text-shadow: 1px 1px 1px rgb(72, 4, 4);
+        }
+        .fa-circle-exclamation{
+            color: rgb(255, 0,0);
+            background-color: transparent;
+            font-size: 25px;
+            text-shadow: 2px 2px 2px rgba(255, 255, 255, 0.081);
+        }
+        .mensaje{
+            color: rgb(255, 251, 251);
+            font-size: large;
+            font-size: 18px;
+            font-weight: bolder;
+            text-shadow: 1px 1px 1px rgb(40, 7, 7);
+        }
+        .favor{
+            color: rgb(246, 255, 0);
+            font-size: small;
+            
+        }
+        #segundos{
+            color: rgb(255, 255, 0);
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class='login-container'>
+        <div class='titulo-container'>
+            <img class='logo-unan' src='https://drive.google.com/uc?export=download&id=1-o8Q9Ol7JsAEkVuM772RNePLjGVqEpxl' alt='UNAN MANAGUA'>
+            <h1 class='titulo'>SNACK VENDING MACHINE</h1>
+            <h5 class='error'> ERROR <i class='fa-solid fa-circle-exclamation'></i> </h5>
+            <p class='mensaje'>ESTA CUENTA NO ESTA REGISTRADA</p>
+            <p class='favor'>SERA REDIRECCIONADO AL MENU PRINCIPAL EN <br> </p>
+            <div id='contador'> <span id='segundos'>5</span> </div>
+        </div>
+            <a href='/' target='_self' rel='noopener noreferrer'><i class='fa-solid fa-house'></i></a>
+            <br>
+    </div>
+    <script>
+        function iniciarContador() {
+            var segundos = 5;
+            var contador = document.getElementById('segundos');
+    
+            var intervalo = setInterval(function() {
+                segundos--;
+                contador.textContent = segundos;
+    
+                if (segundos <= 0) {
+                    clearInterval(intervalo);
+                    window.location.href = '/';
+                }
+            }, 1000); 
+        }
+        window.addEventListener('load', iniciarContador);
+    </script>
+</body>
+</html>
