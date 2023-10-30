@@ -242,10 +242,10 @@ void setup()
     delay(1000);
   }
 
-  //server.on("/", HTTP_GET, handleRoot);
-  //server.on("/search", HTTP_GET, handleSearch);
+  server.on("/", HTTP_GET, handleRoot);
+  server.on("/search", HTTP_GET, handleSearch);
 
-  //server.begin();
+  server.begin();
   Serial.println("Servidor iniciado");
 }
 
