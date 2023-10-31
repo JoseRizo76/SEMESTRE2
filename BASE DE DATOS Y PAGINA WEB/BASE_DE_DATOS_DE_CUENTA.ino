@@ -250,13 +250,8 @@ void setup()
 }
 
 void loop()
-{
-  digitalWrite(P1, HIGH);
-  digitalWrite(P2, HIGH);
-  digitalWrite(P3, HIGH);
-  digitalWrite(P4, HIGH);
-  digitalWrite(P5, HIGH);
-  //server.handleClient();
+{
+  server.handleClient();
 
   // VARIABLES QUE ALMACENAN EL TIEMPO DESDE QUE SE ENCENDIO EL ESP32
   tiempo = millis();
