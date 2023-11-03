@@ -7,7 +7,10 @@
 #include <WiFi.h>
 #include <WebServer.h>
 #include <WiFiMulti.h>
+#include <CTBot.h>
+ CTBot miBot;
 
+#include "token.h"
 WiFiMulti wifiMulti;
 WebServer server(80);
 
@@ -162,7 +165,6 @@ void handleSearch() {
   server.send(200, "text/html", response);
 }
 
-
 void setup()
 {
   // INICIALIZA EL COMUNICADOR SERIAL A 115200 BAUDIOS
@@ -187,9 +189,9 @@ void setup()
   // VOIDS
   RFID();
   lcdInit();
-  wifiMulti.addAP("POCO-F3", "Jose Rizo");
-  wifiMulti.addAP("Casa Dalmata", "Primos2021");
-  wifiMulti.addAP("WiFi-Estudiante", "UNANManagua*");
+  wifiMulti.addAP(ssid1, password1);
+  wifiMulti.addAP(ssid2, password2);
+  wifiMulti.addAP(ssid3, password3);
   lcd.clear();
   cr();
   lcd.print("CONECTANDO WIFI");
@@ -214,14 +216,21 @@ void setup()
       cr2();
       lcd.print(WiFi.SSID());
       delay(1000);
-      lcd.clear();
   }
   else{
     lcd.clear();
     lcd.print("ERROR DE CONEXION");
     delay(500);
+    lcd.clear();
   }
-  lcd.clear();
+  miBot.wifiConnect(WiFi.SSID().c_str(), WiFi.psk().c_str());
+  miBot.setTelegramToken(token);
+
+  if (miBot.testConnection()) {
+    Serial.println("Conectado a Telegram");
+  } else {
+   Serial.println("Problemas en la conexión con Telegram");
+  }
 
   // DECLARACION DE PINES DE SALIDA
   pinMode(P1, OUTPUT);
@@ -229,8 +238,6 @@ void setup()
   pinMode(P3, OUTPUT);
   pinMode(ENABLE, OUTPUT);
   pinMode(P5, OUTPUT);
-
-  
 
   // DECLARACION DE PINES DE ENTRADA
 
@@ -247,13 +254,61 @@ void setup()
   server.on("/", HTTP_GET, handleRoot);
   server.on("/search", HTTP_GET, handleSearch);
 
-  //server.begin();
+  server.begin();
   Serial.println("Servidor iniciado");
+  
 }
 
 void loop()
 {
+  delay(10);
+
   server.handleClient();
+
+  TBMessage msg;
+    if (CTBotMessageText == miBot.getNewMessage(msg)) {
+      String text = msg.text; 
+      text.toLowerCase();
+
+        if (msg.text.equalsIgnoreCase("url")) {
+            String direccion = "Bienvenido "+msg.sender.firstName + "\n\nDirección IP Local: http://";
+            direccion += WiFi.localIP().toString() + "\n\nRecuerde!\nPara poder acceder a la página web, tiene que estar conectado a la red WiFi → " + WiFi.SSID();
+            direccion += "\n\nGracias por su tiempo ♡";
+            miBot.sendMessage(msg.sender.id, direccion);
+        }  else if (text.startsWith("cuenta ")){
+            String accountIDStr = msg.text.substring(7); 
+            int accountID = accountIDStr.toInt();
+
+          if (accountID >= 1000 && accountID <= 9999){
+            bool found = false;
+            String response;
+            for (int i = 0; i < contador; i++) {
+                if (accountID == cliente[i].id) {
+                    response = "Bienvenido Cliente → "+ String(i+1) + "\n\n";
+                    response += "Cuenta → " + String(cliente[i].id) + "\n";
+                    response += "El saldo de tu cuenta es: C$ " + String(cliente[i].dinero) + "\n\n";
+                    response += "Gracias por su tiempo ♡";
+                    found = true;
+                    break;
+                }
+            }
+
+            if (found) {
+                miBot.sendMessage(msg.sender.id, response);
+            } else {
+                miBot.sendMessage(msg.sender.id, "LA CUENTA NO SE ENCONTRO");
+            }
+          }
+          else{ 
+            miBot.sendMessage(msg.sender.id, "EL ID DE LA CUENTA TIENE UN RANGO ENTRE 1000 Y 9999 \nEJEMPLO → cuenta 1000 o cuenta 9999 ");
+          }
+
+        } else {
+            miBot.sendMessage(msg.sender.id, "Bienvenido → " + msg.sender.firstName + "\n\nINTENTA USAR\n\nURL → Para conocer la Direccion de la pagina\n\nCuenta XXXX → Para conocer el saldo de la su Cuenta\nReemplaze XXXX Por el ID de su cuenta\n ");
+        }
+    }
+
+
 
   // VARIABLES QUE ALMACENAN EL TIEMPO DESDE QUE SE ENCENDIO EL ESP32
   tiempo = millis();
@@ -377,7 +432,7 @@ void loop()
         break;
       //SI PRESIONA EL 3 BORRARA TODAS LAS CUENTAS QUE TENGA LA MAQUINA
       case '3': 
-        lcd.clear(); CverificacionPrint = true; cr(); lcd.print("CUENTAS PRINT"); band_default(); lcd.clear(); break;
+        lcd.clear(); CverificacionPrint = true; cr(); lcd.print("CUENTAS PRINT"); delay(500); band_default(); lcd.clear(); break;
       //SI PRESIONA EL * VOLVERA AL MENU PRINCIPAL
       case '*': 
         band_default(); break;
@@ -400,7 +455,7 @@ void loop()
   }
 
   //SI SE INGRESA EL ID SE BUSCARA DENTRO DE TODA LA ESTRUCTURA
-  if (user>=1000 && user < 9999){
+  if (user>=1000 && user <= 9999){
     if (band7 == 'f'){
       lcd.clear();
       cr();
@@ -487,9 +542,11 @@ void loop()
 
 
 //RETIRO DE PRODUCTO DEPENDIENDO DE LA FORMA DE INGRESO DE ID Y CONTRASEÑA
+
   if (opc == 1 && estadoVC == false && retiroProducto == false){
     pedirID();
     band3 = 'f';
+    
     if (mfrc522.PICC_IsNewCardPresent() && mfrc522.PICC_ReadCardSerial()){
       String idTarjeta = "";
       lcd.clear();
@@ -528,6 +585,7 @@ void loop()
       }
       band5 = 'f';
     }
+  
 
       
     if (band9 == 'f' && bandx == 'g' && opc == 1 && retiroProducto == false ){
@@ -570,6 +628,7 @@ void loop()
         lcd.clear();
         cr();
         lcd.print("EXITO");
+        delay (500);
         band3 = 'f';
         retiroProducto = true;
         indice = 0;
@@ -577,7 +636,8 @@ void loop()
       else{
         lcd.clear();
         cr();
-        lcd.print("ERROR");
+        lcd.print("ERROR DE PASSWORD");
+        delay(500);
         band_default(); //EN CASO DE QUE LA CONTRASEÑA NO SEA CORRECTA VOLVERA AL MENU PRINCIPAL
       }
     }
@@ -593,13 +653,14 @@ void loop()
         cr2();
         lcd.print("USUARIO -> ");
         lcd.print(numCliente + 1);
+        cl();
+        lcd.print("1.GALLETA 2.ZIBAS");
+        cl2();
+        lcd.print("3.JUGO    4.TAKIS");
         band3 = 'v';
       }
       char key = keypad.getKey();
-      cl();
-      lcd.print("1.GALLETA 2.ZIBAS");
-      cl2();
-      lcd.print("3.JUGO    4.TAKIS");
+      
       if (key){
         switch (key){
           case '1': SelecProducto = 1; lcd.clear(); cr(); lcd.print("MAXIMO-> "); lcd.print(Producto1); delay(500); lcd.clear(); cr(); lcd.print("SELECT PRODUCT"); cr2(); lcd.print("GALLETA $20");cl(); lcd.print("CANTIDAD -> "); precio = 20; break;
@@ -662,6 +723,7 @@ void loop()
               lcd.print("ESTIMADO CLIENTE SU");
               cr2();
               lcd.print("SALDO INSUFICIENTE");
+              delay(500);
               band_default();
             }
           }
@@ -746,14 +808,20 @@ void cl2 (){
 void nuevaCuenta(){
   // PEDIRA EL ID DE LA CUENTA
   if (contador == 0 && band == 'f' || opc == 2 && band == 'f'){
+    lcd.clear();
     nombre();
     cr2();
     lcd.print("INGRESE ID 4DIG  ");
+    cliente[contador].id = 0;
     cl();
     lcd.print("ID: ");
     band = 'v';
     Serial.print("Cliente ");
     Serial.println(contador + 1);
+    indice == 0;
+    for (int i = 0; i < sizeof(dato); i++) {
+      dato[i] = '\0'; 
+    }
   }
 
   // GUARDA EN LA ESTRUCTURA EL ID DE LA CUENTA
@@ -765,7 +833,6 @@ void nuevaCuenta(){
         dato[indice] = key;
         lcd.print(key);
         indice++;
-        cliente[contador].id = atoi(dato);
         dato[indice] = '\0';
         if (key== '*'){
           band_default();
@@ -773,17 +840,44 @@ void nuevaCuenta(){
       }
 
       // CUANDO SE INGRESE EL 4 DIGITO SE GURADARA AUNTOMATICAMENTE EN EL ID
-      if (indice == 4 && cliente[contador].id >= 1000){
-        indice = 0;
-        band = 'p';
-        lcd.clear();
+      if (indice == 4 && atoi(dato) >= 1000){
+        boolean idvef = false;
+        
+        for (int i= 0; i<= contador; i++){
+          if(cliente[i].id == atoi(dato)){
+            idvef = true;
+            break;
+          }
+          else{
+            idvef = false;
+          }
+        }
+        if (idvef == true){
+           lcd.clear();
+            cr();
+            lcd.print("ID YA REGISTRADO");
+            cr2();
+            lcd.print("INGRESE ID DIFERENTE");
+            delay(1000);
+            band = 'f';
+            lcd.clear();
+            indice = 0;
+        }
+        else if (idvef == false){
+          indice = 0;
+          band = 'p';
+          lcd.clear();
+          cliente[contador].id = atoi(dato);
+        }   
       }
 
       // EL ID DEBE DE ESTAR EN EL RANGO DE 1000 A 9999
-      else if (indice == 4 && cliente[contador].id < 1000){
-        indice = 0;
+      else if (indice == 4 && atoi(dato) < 1000){
+        lcd.clear();
         cr();
         lcd.print("ERROR ID < 1000");
+        indice = 0;
+        delay(500);
         band = 'f';
         lcd.clear();
       }
@@ -822,11 +916,12 @@ void nuevaCuenta(){
       indice = 0;
       lcd.clear();
       band = 't';
+      band4 = 's';
     }
   }
 
   // VERIFICACION SI TIENE TARJETA
-  if (contador == 0 && band == 't' || opc == 2 && band == 't'){
+  if (contador == 0 && band == 't' && band4 == 's' || opc == 2 && band == 't' && band4 == 's' ){
     char key = keypad.getKey();
     char banda = 'f';
     // char bandaa = 'f';
@@ -837,35 +932,35 @@ void nuevaCuenta(){
       lcd.print("TARJETA RFID?");
       cl();
       lcd.print("SI-> #  NO-> 0");
-      band3 = 'v';
+      banda = 'v';
+      band4 = 'v';
     }
   }
 
   // VERIFICA QUE SI PRESIONO * PARA LECTURA DEL LA RFID O # PARA CANCELAR LA LECTURA DEL RFID
-  if (contador == 0 && band == 't' && band3 == 'v' || opc == 2 && band == 't' && band3 == 'v'){
+  if (contador == 0 && band == 't' && band4 == 'v' || opc == 2 && band == 't' && band4 == 'v'){
     char key = keypad.getKey();
     if (key){
       switch (key){
-      case '#': band = 'q'; lcd.clear(); break;
-      case '0': band = 'n'; strcpy(cliente[contador].Tarjeta, "NO REGISTRADA");
+      case '#': band = 'q'; band4 = 'z'; lcd.clear(); break;
+      case '0': band = 'n'; band4 = 'z'; strcpy(cliente[contador].Tarjeta, "NO REGISTRADA");
         lcd.clear();break;
       //SI PRESIONA EL * VOLVERA AL MENU PRINCIPAL
       case '*': 
         band_default(); break;
-      default: lcd.clear(); cr(); lcd.print("ERROR"); delay(500); lcd.clear(); break;
+      default: lcd.clear(); cr(); lcd.print("ERROR"); delay(500); lcd.clear(); band4 = 's'; break;
       }
     }
     // SI PRESIONO  * PEDIRA QUE ESCANEE LA TARJETA
-    if (contador == 0 && band == 'q' && band3 == 'v' || opc == 2 && band == 'q' && band3 == 'v'){
+    if (contador == 0 && band == 'q'  || opc == 2 && band == 'q' ){
       tarjeta();
     }
   }
 
   // VERIFICACION SI TIENE NFC
-  if (contador == 0 && band == 'n' || opc == 2 && band == 'n'){
+  if (contador == 0 && band == 'n' && band4 == 'z' || opc == 2 && band == 'n' && band4 == 'z' ){
     char key = keypad.getKey();
     char banda = 'f';
-    char bandaa = 'f';
     if (banda == 'f'){
       cr();
       lcd.print("DESEA AGREGAR NFC");
@@ -873,13 +968,15 @@ void nuevaCuenta(){
       lcd.print("A LA CUENTA?");
       cl();
       lcd.print("  SI-> #    NO-> 0");
-      band3 = 'v';
+      band4 = 'e';
+      banda = 'v';
     }
   }
 
   // SI PRESIONA * PEDIRA QUE ESCANEE EL NFC
-  if (contador == 0 && band == 'n' && band3 == 'v' || opc == 2 && band == 'n' && band3 == 'v'){
+  if (contador == 0 && band == 'n' && band4 == 'e' || opc == 2 && band == 'n' && band4 == 'e'){
     char key = keypad.getKey();
+    delay(10);
     if (key){
       switch (key){
       case '#': band = 'e'; break;
@@ -887,14 +984,15 @@ void nuevaCuenta(){
       case '*': 
         band_default(); break;
       case '0': strcpy(cliente[contador].NFC, "NFC NO REGISTRADO"); band = 'z'; fin = true; break;
-      default: lcd.clear(); cr(); lcd.print("ERROR"); delay(500); lcd.clear(); break;
+      default: lcd.clear(); cr(); lcd.print("ERROR"); delay(500); lcd.clear(); band4 = 'e'; break;
       }
     }
   }
 
-  if (contador == 0 && band == 'e' && band3 == 'v' || opc == 2 && band == 'e' && band3 == 'v'){
+  if (contador == 0 && band == 'e' || opc == 2 && band == 'e' ){
     nfcEscaner();
-  }
+  } 
+  
 
   // UNA VEZ TERMINADO TODO EL PORCESO DE CREACION DE CUENTA AGREGA EL CLIENTE
   if (band == 'z' && fin == true){
@@ -932,6 +1030,7 @@ void verificacion_clave_maestra(){
       band2 = 'f';
       indice = 0;
     }
+    
     if (mfrc522.PICC_IsNewCardPresent() && mfrc522.PICC_ReadCardSerial()){
       String idTarjeta = "";
       lcd.clear();
@@ -960,6 +1059,7 @@ void verificacion_clave_maestra(){
           nombre();
           cr2();
           lcd.print("ERROR MS-CARD");
+          delay(1000);
           opc = 0;
           lcd.clear();
           indice = 0;
@@ -967,6 +1067,7 @@ void verificacion_clave_maestra(){
           band3 = 'f';
          }
       }
+      
 
     //  MUESTRA EN LA PANTALLA LA CONTRASEÑA PERO DE MANERA DE XXXXXXX
     if (key){
@@ -1004,6 +1105,7 @@ void verificacion_clave_maestra(){
         lcd.clear();
         cr();
         lcd.print("CLAVE INCORRECTA");
+        delay(1000);
         opc = 0;
         lcd.clear();
         indice = 0;
@@ -1034,71 +1136,49 @@ void verificacion_clave_maestra(){
 // MENU PRINCIPAL DE LAS ACCIONES QUE SE PUEDEN HACER
 void opcion_menu_principal(){
   if (opc == 0 && contador > 0){
-
     if (estadotiempo == true){
-      timea = segundos + 15;
+      timea = segundos + 30;
       estadotiempo = false;
       estadowifi = false;
     }
 
     if (segundos >= timea) {
-    if (wifiMulti.run() == WL_CONNECTED) {
-        estadowifi = true;
-        timea = segundos + 15;
-    } else {
-        estadowifi = false;
-        lcd.clear();
-        cr();
-        lcd.print("RECONECTANDO");
-        cargando();
-        if (wifiMulti.run() != WL_CONNECTED) {
-          Serial.println("No conectado a ninguna red WiFi. Intentando reconexión...");
-          wifiMulti.addAP("POCO-F3", "Jose Rizo");
-          wifiMulti.addAP("Casa Dalmata", "Primos2021");
-          wifiMulti.addAP("WiFi-Estudiante", "UNANManagua*");
-          timea = segundos + 15;
-        }
+      if (wifiMulti.run() == WL_CONNECTED) {
+          estadowifi = true;
+          timea = segundos + 90;
+          Serial.println("CONECTADO");
+      } 
 
-        if (wifiMulti.run() == WL_CONNECTED) {
-            Serial.print("Conectado a la red: ");
-            Serial.println(WiFi.SSID());
-            Serial.println("IP address: ");
-            Serial.println(WiFi.localIP());
-            lcd.clear();
-            cr();
-            lcd.print("CONECTADO");
-            delay(500);
-            lcd.clear();
-        } else {
-            cr();
-            lcd.print("ERROR DE CONEXION");
-            delay(500);
-            lcd.clear();
-        }
+      else {
+          estadowifi = false;
+          Serial.println("DESCONECTADO");
+          timea = segundos + 30;
+      }
     }
-}
-
-//estadotiempo = false;
 
 
     char key = keypad.getKey();
-    nombre();
-    cr2();
-    lcd.print("      PRESIONE  ");
-    cl();
-    lcd.print("AVANZADO -> *");
-    cl2();
-    lcd.print("RETIRO PRODUCTO -> #");
+    if (band3 == 'f'){
+      nombre();
+      cr2();
+      lcd.print("      PRESIONE  ");
+      cl();
+      lcd.print("AVANZADO -> *");
+      cl2();
+      lcd.print("RETIRO PRODUCTO -> #");
+      band3 = 'v';
+    }
     estado = 0;
     // VERIFICACION DE LA ACCION QUE QUIERE HACER EL CLIENTE
     if (key){
+      band3 = 'f';
       switch (key){
       // OPCIONES QUE REQUIEREN QUE INGRESE CONTRASEÑA PARA INGRESAR UNA CUENTA
-      case '*': opc = 2; Cverificacion = false; band3 = 'f'; band6 = 'f'; lcd.clear(); estadotiempo = false; break;
+      case '*': opc = 2; Cverificacion = false; band3 = 'f'; band6 = 'f'; lcd.clear(); estadotiempo = true; break;
       // EN CASO DE QUE QUIERA PROCEDER A RETIRAR UN  PRODUCTO
-      case '#': opc = 1; subopc = 1; lcd.clear(); band6 = 'f'; estadotiempo = false; break;
+      case '#': opc = 1; subopc = 1; lcd.clear(); band6 = 'f'; estadotiempo = true; break;
       // EN CASO DE QUE PRESIONE UN TECLA QUE NO ESTE EN EL MENU
-      default: lcd.clear(); cr(); lcd.print("ERROR DE OPCION"); delay(500); lcd.clear(); estadotiempo = false; break;
+      default: lcd.clear(); cr(); lcd.print("ERROR DE OPCION"); delay(500); lcd.clear(); estadotiempo = true; break;
       }
     }
   }
@@ -1116,7 +1196,9 @@ void mensaje_verificacion(){
 }
 
 // LECTURA DE TARJETA VOID
+
 void tarjeta(){
+  
   while (band == 'q'){
     if (band5 == 'f'){
       lcd.clear();
@@ -1148,10 +1230,11 @@ void tarjeta(){
       band5 = 'f';
     }
   }
+  
 }
 
 // VOID DEL ESCANEO NFC ///
-void nfcEscaner(){
+void nfcEscaner(){ 
   while (band == 'e'){
     if (band5 == 'f'){
       lcd.clear();
@@ -1214,6 +1297,7 @@ void nfcEscaner(){
           lcd.clear();
           band5 = 'f';
           band = 'z';
+          delay(500);
           fin = true;
         }
         else{
@@ -1275,6 +1359,7 @@ void pedirID (){
       cr();
       lcd.print("ERROR ID < 1000");
       band7 = 'f';
+      delay (500);
       lcd.clear();
       subopc = 2; 
     }
@@ -1282,39 +1367,39 @@ void pedirID (){
 //VOID PARA LOS ESTADOS DEL DESMULTIPLEXOR 
 // APAGA TODOS LOS CANALES
 void CANAL_OFF(){
-  digitalWrite(P3, LOW); digitalwrite(P2, LOW); digitalWrite(P1, LOW); digitalWrite(ENABLE, LOW);
+  digitalWrite(P3, LOW); digitalWrite(P2, LOW); digitalWrite(P1, LOW); digitalWrite(ENABLE, LOW);
 }
 //SALIDA DEL DESMULTIPLEXOR 0
 void CANAL_0 (){
-  digitalWrite(P3, LOW); digitalwrite(P2, LOW); digitalWrite(P1, LOW); digitalWrite(ENABLE, HIGH);
+  digitalWrite(P3, LOW); digitalWrite(P2, LOW); digitalWrite(P1, LOW); digitalWrite(ENABLE, HIGH);
 }
 //SALIDA DEL DESMULTIPLEXOR 1
 void CANAL_1 (){
-  digitalWrite(P3, LOW); digitalwrite(P2, LOW); digitalWrite(P1, HIGH); digitalWrite(ENABLE, HIGH);
+  digitalWrite(P3, LOW); digitalWrite(P2, LOW); digitalWrite(P1, HIGH); digitalWrite(ENABLE, HIGH);
 }
 //SALIDA DEL DESMULTIPLEXOR 2
 void CANAL_2 (){
-  digitalWrite(P3, LOW); digitalwrite(P2, HIGH); digitalWrite(P1, LOW); digitalWrite(ENABLE, HIGH);
+  digitalWrite(P3, LOW); digitalWrite(P2, HIGH); digitalWrite(P1, LOW); digitalWrite(ENABLE, HIGH);
 }
 //SALIDA DEL DESMULTIPLEXOR 3
 void CANAL_3 (){
-  digitalWrite(P3, LOW); digitalwrite(P2, HIGH); digitalWrite(P1, HIGH); digitalWrite(ENABLE, HIGH);
+  digitalWrite(P3, LOW); digitalWrite(P2, HIGH); digitalWrite(P1, HIGH); digitalWrite(ENABLE, HIGH);
 }
 //SALIDA DEL DESMULTIPLEXOR 4
 void CANAL_4 (){
-  digitalWrite(P3, HIGH); digitalwrite(P2, LOW); digitalWrite(P1, LOW); digitalWrite(ENABLE, HIGH);
+  digitalWrite(P3, HIGH); digitalWrite(P2, LOW); digitalWrite(P1, LOW); digitalWrite(ENABLE, HIGH);
 }
 //SALIDA DEL DESMULTIPLEXOR 5
 void CANAL_5 (){
-  digitalWrite(P3, HIGH); digitalwrite(P2, LOW); digitalWrite(P1, HIGH); digitalWrite(ENABLE, HIGH);
+  digitalWrite(P3, HIGH); digitalWrite(P2, LOW); digitalWrite(P1, HIGH); digitalWrite(ENABLE, HIGH);
 }
 //SALIDA DEL DESMULTIPLEXOR 6
 void CANAL_6 (){
- digitalWrite(P3, HIGH); digitalwrite(P2, HIGH); digitalWrite(P1, LOW); digitalWrite(ENABLE, HIGH);
+ digitalWrite(P3, HIGH); digitalWrite(P2, HIGH); digitalWrite(P1, LOW); digitalWrite(ENABLE, HIGH);
 }
 //SALIDA DEL DESMULTIPLEXOR 7
-void CANAL_6 (){
- digitalWrite(P3, HIGH); digitalwrite(P2, HIGH); digitalWrite(P1, HIGH); digitalWrite(ENABLE, HIGH);
+void CANAL_7 (){
+ digitalWrite(P3, HIGH); digitalWrite(P2, HIGH); digitalWrite(P1, HIGH); digitalWrite(ENABLE, HIGH);
 }
 
 //MANTIENE POR DEFECTO TODAS LAS VARIABLES DE TIPO BAND Y OTRAS PARA EL INICIO AL MENU PRINCIPAL
@@ -1323,5 +1408,5 @@ void band_default(){
   opc = 0; user =0; bandVC = 'g'; band2 = 'v'; band3 = 'f'; band4 = 'f'; band5 = 'f'; band6 = 'f'; band7 = 'f'; band8 = 'f'; bandVC = 'g';
   indice = 0; band = 'f'; lcd.clear(); band2 = 'v'; fin = false; band3 = 'f'; opc = 0; guardarEnPreferences = true; subopc = 0; band7 = 'f';
   dineroint = 0; estado1 = false; indiceD = 0; estado1 = false;  estadoVC = false; cuentaExistente = false; retiroProducto = false;
-  SelecProducto = 0; montoFinal = 0; precio = 0; cantidadProducto = 0; estadotiempo = true ;
-}ESP
+  SelecProducto = 0; montoFinal = 0; precio = 0; cantidadProducto = 0;
+}
