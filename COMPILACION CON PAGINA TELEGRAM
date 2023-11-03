@@ -436,7 +436,7 @@ void loop()
         break;
       //SI PRESIONA EL 3 BORRARA TODAS LAS CUENTAS QUE TENGA LA MAQUINA
       case '3': 
-        lcd.clear(); CverificacionPrint = true; cr(); lcd.print("CUENTAS PRINT"); band_default(); lcd.clear(); break;
+        lcd.clear(); CverificacionPrint = true; cr(); lcd.print("CUENTAS PRINT"); delay(500); band_default(); lcd.clear(); break;
       //SI PRESIONA EL * VOLVERA AL MENU PRINCIPAL
       case '*': 
         band_default(); break;
@@ -1098,6 +1098,7 @@ void opcion_menu_principal(){
       timea = segundos + 15;
       estadotiempo = false;
       estadowifi = false;
+      lcd.print("ESPERE...");
     }
 
     if (segundos >= timea) {
@@ -1276,6 +1277,7 @@ void nfcEscaner(){
           lcd.clear();
           band5 = 'f';
           band = 'z';
+          delay(500);
           fin = true;
         }
         else{
