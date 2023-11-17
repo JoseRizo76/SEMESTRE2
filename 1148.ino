@@ -1207,7 +1207,7 @@ void opcion_menu_principal(){
           estadogg = true;
         }
     }
-    if (estadogg = true){
+    if (estadogg == true){
       Serial.println(10000001);
       Serial.println(10000001);
       Serial.println(10000001);
