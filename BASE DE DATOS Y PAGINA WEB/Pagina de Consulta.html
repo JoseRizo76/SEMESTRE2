@@ -38,18 +38,23 @@
             background-color: #222222;
             padding: 10px;
             border-radius: 20px;
-            box-shadow: 5px 5px 10px 10px rgba(255, 1, 1, 0.285);
+            box-shadow: 5px 5px 10px 10px rgba(0, 1, 255, 0.285);
             width: 350px;
             height: 400px;
             text-align: center;
             border-width: 1px;
-            border-color: rgba(255, 1, 1, 0.99);
+            border-color: rgba(0, 0, 255, 0.89);
             border-style: solid;
-            animation: borderAnimation 0.5s infinite alternate;
+            animation: borderAnimation 0.4s infinite alternate;
         }
         @keyframes borderAnimation {
-            0% { border-width: 1px; }
-            100% { border-width: 4px; }
+            0% { border-width: 1px; 
+            		box-shadow: 2px 2px 2px 2px rgba(0, 1, 255, 0.085);
+            }
+            
+            100% { border-width: 4px; 
+            		box-shadow: 5px 5px 10px 10px rgba(18, 18, 229, 0.385);
+            }
         }
         .subtitulo {
             margin-bottom: 20px;
@@ -79,7 +84,7 @@
             font-size: 45px;
             color: #000000;
             padding: 10px;
-            animation: bordertext 0.8s infinite alternate-reverse;
+            animation: bordertext 1.5s infinite alternate-reverse;
             margin-bottom: 15px;
         }
 
@@ -89,8 +94,10 @@
             }
         }
         @keyframes bordertext {
-            0% { text-shadow: 1px 1px 1px rgb(4, 255, 192); }
-            100% { text-shadow: 3px 1px 3px rgb(6, 255, 56)}
+            3% { text-shadow: 1px 1px 1px rgb(0, 0, 0); }
+            12% { text-shadow: 4px 1px 1px rgb(4, 255, 192); }
+            50% { text-shadow: 4px 1px 3px rgb(255, 0, 0)}
+            100% { text-shadow:4px 1px 3px rgb(0, 0, 255)}
         }
         .fa-user {
             font-size: 20px;
