@@ -653,7 +653,7 @@ void loop()
         lcd.print("SELECCION DE PRODUCTO");
         cr2();
         lcd.print("USUARIO -> ");
-        lcd.print(numCliente + 1);
+        lcd.print(cliente[numCliente].id);
         cl();
         lcd.print("1.GALLETA   2.ZIBAS");
         cl2();
@@ -668,6 +668,8 @@ void loop()
           case '2': SelecProducto = 2; lcd.clear(); cr(); lcd.print("MAXIMO-> "); lcd.print(Producto2); delay(500); lcd.clear(); cr(); lcd.print("PRODUC. SELECCIONADO:"); cr2(); lcd.print("ZIBAS $50");cl(); lcd.print("CANTIDAD -> "); precio = 50; break;
           case '3': SelecProducto = 3; lcd.clear(); cr(); lcd.print("MAXIMO-> "); lcd.print(Producto3); delay(500); lcd.clear(); cr(); lcd.print("PRODUC. SELECCIONADO:"); cr2(); lcd.print("JUGO $25");cl(); lcd.print("CANTIDAD -> ");  precio = 25; break;
           case '4': SelecProducto = 4; lcd.clear(); cr(); lcd.print("MAXIMO-> "); lcd.print(Producto4); delay(500); lcd.clear(); cr(); lcd.print("PRODUC. SELECCIONADO:"); cr2(); lcd.print("TAKIS $30");cl(); lcd.print("CANTIDAD -> "); precio = 30; break;
+          case '5': break;
+          case '7': break;
           case '*': band_default(); break;
           default: lcd.clear(); cr(); band3= 'f'; lcd.print("ERROR DE OPCION"); delay(1000); lcd.clear(); break;
         }
@@ -681,6 +683,8 @@ void loop()
           case 2: CTP = Producto2; break;
           case 3: CTP = Producto3; break;
           case 4: CTP = Producto4; break;
+          case 5: CTP = Producto5; break; 
+          case 6: CTP = Producto6; break;
         }
         band3= 'h';
       }
@@ -1192,29 +1196,26 @@ void verificacion_clave_maestra(){
 // MENU PRINCIPAL DE LAS ACCIONES QUE SE PUEDEN HACER
 void opcion_menu_principal(){
   
-  if (Serial.available() > 0) {
-    String mensaje = Serial.readString(); 
-    boolean estadogg = false;
-    int numeroCuenta = mensaje.toInt(); 
+  if (opc == 0 && contador > 0){
+    
+    if (Serial.available() > 0) {
+    int numeroCuenta = Serial.parseInt();
+    boolean lectura = false;
+    
     for (int i = 0; i < contador; i++) {
         if (numeroCuenta == cliente[i].id) {
-          Serial.println(cliente[i].dinero);
-          Serial.println(cliente[i].dinero);
-          Serial.println(cliente[i].dinero);
+            lectura = true;
+            Serial.println(cliente[i].dinero);
+            delay(1000);
             break;
         }
-        else{
-          estadogg = true;
-        }
-    }
-    if (estadogg == true){
-      Serial.println(10000001);
-      Serial.println(10000001);
-      Serial.println(10000001);
     }
     
-  }
-  if (opc == 0 && contador > 0){
+    if (!lectura) {
+        Serial.println(10000001);
+    }
+}
+
     if (estadotiempo == true){
       timea = segundos + 30;
       estadotiempo = false;
@@ -1503,46 +1504,4 @@ void band_default(){
 void PAGINA(){
   server.handleClient();
 
-  /*TBMessage msg;
-    if (CTBotMessageText == miBot.getNewMessage(msg)) {
-      String text = msg.text; 
-      text.toLowerCase();
-
-        if (msg.text.equalsIgnoreCase("url")) {
-            String direccion = "Bienvenido "+msg.sender.firstName + "\n\nDirección IP Local: http://";
-            direccion += WiFi.localIP().toString() + "\n\nRecuerde!\nPara poder acceder a la página web, tiene que estar conectado a la red WiFi → " + WiFi.SSID();
-            direccion += "\n\nGracias por su tiempo ♡";
-            miBot.sendMessage(msg.sender.id, direccion);
-        }  else if (text.startsWith("cuenta ")){
-            String accountIDStr = msg.text.substring(7); 
-            int accountID = accountIDStr.toInt();
-
-          if (accountID >= 1000 && accountID <= 9999){
-            bool found = false;
-            String response;
-            for (int i = 0; i < contador; i++) {
-                if (accountID == cliente[i].id) {
-                    response = "Bienvenido Cliente → "+ String(i+1) + "\n\n";
-                    response += "Cuenta → " + String(cliente[i].id) + "\n";
-                    response += "El saldo de tu cuenta es: C$ " + String(cliente[i].dinero) + "\n\n";
-                    response += "Gracias por su tiempo ♡";
-                    found = true;
-                    break;
-                }
-            }
-
-            if (found) {
-                miBot.sendMessage(msg.sender.id, response);
-            } else {
-                miBot.sendMessage(msg.sender.id, "LA CUENTA NO SE ENCONTRO");
-            }
-          }
-          else{ 
-            miBot.sendMessage(msg.sender.id, "EL ID DE LA CUENTA TIENE UN RANGO ENTRE 1000 Y 9999 \nEJEMPLO → cuenta 1000 o cuenta 9999 ");
-          }
-
-        } else {
-            miBot.sendMessage(msg.sender.id, "Bienvenido → " + msg.sender.firstName + "\n\nINTENTA USAR\n\nURL → Para conocer la Direccion de la pagina\n\nCuenta XXXX → Para conocer el saldo de la su Cuenta\nReemplaze XXXX Por el ID de su cuenta\n ");
-        }
-    }*/
 }
