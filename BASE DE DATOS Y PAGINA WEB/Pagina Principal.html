@@ -54,7 +54,6 @@
             background-color: #222222;
             padding: 10px;
             border-radius: 20px;
-            box-shadow: 5px 5px 10px 10px rgba(255, 1, 1, 0.285);
             width: 350px;
             height: 400px;
             text-align: center;
@@ -64,8 +63,10 @@
             animation: borderAnimation 0.5s infinite alternate;
         }
         @keyframes borderAnimation {
-            0% { border-width: 1px; }
-            100% { border-width: 4px; }
+            10% { border-width: 0px; 
+                box-shadow: 0px 0px 0px 0px rgba(255, 1, 1, 0.089);}
+            90% { border-width: 2.5px;
+                box-shadow: 4px 4px 8px 8px rgba(255, 1, 1, 0.385); }
         }
         .subtitulo {
             margin-bottom: 20px;
@@ -76,6 +77,7 @@
         }
         ::placeholder {
             text-align: center;
+            font-size: 10px;
         }
         .texto-ingreso {
             width: 65%;
@@ -140,14 +142,30 @@
         }
         .fa-question {
             position: absolute;
-            bottom: 0;
-            right: 0;
-            margin: 0;
-            border-radius: 30px;
+            bottom: 20px;
+            right: 15px;
+            margin: 0px;
             text-align: center;
-            color: #ff0000;
             font-size: 60px;
+            animation: fa-animacion 2.3s infinite;
         }
+        .fa-telegram{
+            color: rgb(0, 179, 255);
+            background-color: white;
+            border-radius: 101%;
+            position: absolute;
+            text-align: center;
+            bottom: 30px;
+            left: 47%;
+            font-size: 40px;
+        }
+        @keyframes fa-animacion {
+            100% { color: rgb(0, 0, 255); }
+            66% { color: rgb(255, 0, 0);  }
+            33% { color: rgb(0, 255, 0);  }
+            0% { color:transparent;  }
+        }
+
         .modal {
             display: none;
             position: fixed;
@@ -171,16 +189,46 @@
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(8, 206, 255, 0.927);
         }
+        .instrucciones{
+            color: rgb(34, 255, 0);
+            text-align: center;
+            text-indent: 2px;
+            font-size: 13;
+        }
+
+        .contenidoI{
+            font-size: 10px;
+            text-indent: 2px;
+            color: rgb(254, 254, 254);
+        }
+        .contenido{
+            color: rgb(0, 153, 255);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 12px;
+            text-align: center;
+            text-indent: 3px;
+            font-weight: bold;
+            margin-right: 80px;
+            margin-top: 50px;
+            margin-bottom: 2px;
+        }
+
         .modal-contenido h6 {
             color: rgb(0, 255, 217);
             text-align: center;
             font-size: 20px;
             text-indent: 1px;
         }
+        .pasos{
+            font-size: 13px;
+            margin: 0px;
+            color: aqua;
+        }
         .cerrar-modal {
             position: absolute;
             top: 10px;
             right: 10px;
+            font-weight: 400;
             font-size: 30px;
             cursor: pointer;
             color: red;
@@ -243,7 +291,9 @@
     <div id='modal-ayuda' class='modal'>
         <div class='modal-contenido'>
             <span class='cerrar-modal' id='cerrar-modal'>&times;</span>
-            <h6>ESTE ES UN MENSAJE DE AYUDA<br><br>GRUPO 4 ING ELECTONICA</h6>
+            <h6>AYUDA<br><br><p class='instrucciones'> INSTRUCCIONES PARA CONSULTAR SU SALDO</p></h6><br>
+            <p class='contenidoI'>  <h class='pasos'>PASO 1</h><br><br>1. INGRESE EL NUMERO DE USUARIO CON EL QUE SE REGISTRO <br><br><br><h class='pasos'>PASO 2</h><br><br>2. PRESIONE EL BOTON CONSULTAR<br><br><br><br> <h class='contenido'>PUEDE CONSULTAR EL SALDO DE SU CUENTA CON EL BOT DE TELEGRAM CLICK EN EL ICONO</h> </p>
+            <a href='https://t.me/Snack_vending_machine_bot' target='_blank' rel='noopener noreferrer' ><i class='fa-brands fa-telegram'></i></a>
         </div>
     </div>
     <script>
@@ -291,9 +341,6 @@
         return true;
     }
 }
-
-
-
     </script>
     <footer>
         <p>INGENIERA ELECTRONICA <a href='https://www.unan.edu.ni/' target='_blank' rel='noopener noreferrer'>@UNAN MANAGUA</a></p>
