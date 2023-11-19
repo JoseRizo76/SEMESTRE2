@@ -59,8 +59,8 @@ void loop() {
 
 
     if (msg.text.equalsIgnoreCase("url")) {
-      String direccion = "Bienvenido "+msg.sender.firstName + "\n\nDirección IP Local: http://";
-      direccion += WiFi.localIP().toString() + "\n\nRecuerde!\nPara poder acceder a la página web, tiene que estar conectado a la red WiFi → " + WiFi.SSID();
+      String direccion = "Bienvenido "+msg.sender.firstName + "\n\nDirección IP Local: http://192.168.0.100";
+      direccion += "\n\nRecuerde!\nPara poder acceder a la página web, tiene que estar conectado a la red WiFi → WIFI ESTUDIANTE ";
       direccion += "\n\nGracias por su tiempo ♡";
       miBot.sendMessage(msg.sender.id, direccion);
     } else if (text.startsWith("cuenta ")) {
